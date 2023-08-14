@@ -81,56 +81,84 @@ def depthFirstSearch(problem: SearchProblem):
 
     To get started, you might want to try some of these simple commands to
     understand the search problem that is being passed in:
-
-    print("Start:", problem.getStartState())
-    print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
-    print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
-    "*** YOUR CODE HERE ***"
-    path: any
-    path = util.Stack()
-    print("Start:", problem.getStartState())
-    print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
-    print("Start's successors:", problem.getSuccessors(problem.getStartState()))
    
+    stack = util.Stack()
+    paths = util.Stack()
     visited = set()
-
-    for neighbor in problem.getSuccessors(node):
-        if problem.getSucessor() in visited:
-            count+=1
-    if(count == len(problem.getSuccessors())):
-        path.pop()
-        return
-
-    for next_node in problem.getSuccessors(node):
-        if next_node not in visited:
-            current_node = next_node
-            break
+    node = problem.getStartState()
     stack.push(node)
-    count =  problem.getSuccessors(node)
-    print(len(count))
-    if len(problem.getSuccessors(node)) == 0:
-        return
-    node = problem.getSuccessors(node)[0][0]
-    print('A DOLL TA TESTANDO', problem.getSuccessors(node))
-    if node not in visited:
-        visited.add(node)
-        for neighbor in problem.getSuccessors(node):
-            if neighbor not in visited:
-                visited.add(neighbor)
-                stack.push(neighbor)
+    paths.push([])
 
-    return stack
+    while not stack.isEmpty():
+            
+        node = stack.pop()
+        current_path = paths.pop()
+        if(problem.isGoalState(node)):
+            break
+
+        if node not in visited:
+            successors = problem.getSuccessors(node)
+            visited.add(node)
+            for neighbor in successors:
+                if neighbor[0] not in visited:
+                    stack.push(neighbor[0])
+                    paths.push(current_path + [neighbor[1]])
+            
+    return current_path
 
 def breadthFirstSearch(problem: SearchProblem):
     """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    queue = util.Queue()
+    paths = util.Queue()
+    visited = set()
+    node = problem.getStartState()
+    queue.push(node)
+    paths.push([])
+
+    while not queue.isEmpty():
+        node = queue.pop()
+        current_path = paths.pop()
+
+        if(problem.isGoalState(node)):
+            break
+        
+        if node not in visited:
+            successors = problem.getSuccessors(node)
+            visited.add(node)
+            for neighbor in successors:
+                if neighbor[0] not in visited:
+                    queue.push(neighbor[0])
+                    paths.push(current_path + [neighbor[1]])
+    
+    return current_path
 
 def uniformCostSearch(problem: SearchProblem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    queue = util.PriorityQueue()
+    paths = util.PriorityQueue()
+    visited = set()
+    queue.push(problem.getStartState(), 0)
+    paths.push([], 0)
+
+    while not queue.isEmpty():
+        node = queue.pop()
+        current_path = paths.pop()
+
+        if problem.isGoalState(node):
+            return current_path
+        
+        if node not in visited:
+            successors = problem.getSuccessors(node)
+            visited.add(node)
+            for neighbor in successors:
+                if neighbor[0] not in visited:
+                    cost = problem.getCostOfActions(current_path + [neighbor[1]])
+                    queue.push(neighbor[0], cost)
+                    paths.push(current_path + [neighbor[1]], cost)
+    
+    return current_path  # Retorna uma lista vazia se não encontrar o objetivo
+
 
 def nullHeuristic(state, problem=None):
     """
