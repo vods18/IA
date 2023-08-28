@@ -111,7 +111,7 @@ def breadthFirstSearch(problem: SearchProblem):
     """Search the shallowest nodes in the search tree first."""
     queue = util.Queue()
     paths = util.Queue()
-    visited = set()
+    visited = []
     node = problem.getStartState()
     queue.push(node)
     paths.push([])
@@ -125,7 +125,7 @@ def breadthFirstSearch(problem: SearchProblem):
         
         if node not in visited:
             successors = problem.getSuccessors(node)
-            visited.add(node)
+            visited.append(node)
             for neighbor in successors:
                 if neighbor[0] not in visited:
                     queue.push(neighbor[0])
@@ -171,7 +171,7 @@ def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     queue = util.PriorityQueue()
     paths = util.PriorityQueue()
-    visited = set()
+    visited = []
     queue.push(problem.getStartState(), 0)
     paths.push([], 0)
 
@@ -184,7 +184,7 @@ def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic):
         
         if node not in visited:
             successors = problem.getSuccessors(node)
-            visited.add(node)
+            visited.append(node)
             for neighbor in successors:
                 if neighbor[0] not in visited:
                     # now the cost will consider the heuristic too
