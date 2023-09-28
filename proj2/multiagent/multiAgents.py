@@ -15,7 +15,7 @@
 from util import manhattanDistance
 from game import Directions
 import random, util
-
+import math
 from game import Agent
 from pacman import GameState
 
@@ -207,7 +207,51 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        # Get legal moves for Pac-Man
+        legalMoves = gameState.getLegalActions(0)
+        
+        # Generate future states for each legal move
+        futureStates = [gameState.generateSuccessor(0, move) for move in legalMoves]
+
+        # Calculate scores for each future state using minimizer
+        scores = [self.minimizer(0, state, 1) for state in futureStates]
+        
+        # Find the best score and its indices
+        bestScore = max(scores)
+        bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
+        
+        # Pick the first best position
+        bestIndex = bestIndices[0]
+        
+        # Return the best action
+        return legalMoves[bestIndex]
+
+    def maximizer(self, currentDepth, gameState):
+        # Check if the maximum depth is reached or the game is over
+        if self.depth == currentDepth or gameState.isLose() or gameState.isWin():
+            return self.evaluationFunction(gameState)
+
+        # Calculate the maximum score among minimizer's scores
+        return max([self.minimizer(currentDepth, state, 1) for state in
+                    [gameState.generateSuccessor(0, move) for move in gameState.getLegalActions(0)]])
+
+    def minimizer(self, currentDepth, gameState, ghostIndex):
+        # Check if the maximum depth is reached or the game is over
+        if self.depth == currentDepth or gameState.isLose() or gameState.isWin():
+            return self.evaluationFunction(gameState)
+
+        # If it's the last ghost, calculate the minimum score among maximizer's scores
+        if ghostIndex + 1 >= gameState.getNumAgents():
+            return min([self.maximizer(currentDepth + 1, state) for state in
+                        [gameState.generateSuccessor(ghostIndex, move) for move in
+                        gameState.getLegalActions(ghostIndex)]])
+
+        # Calculate the minimum score among other minimizer's scores
+        return min([self.minimizer(currentDepth, state, ghostIndex + 1) for state in
+                    [gameState.generateSuccessor(ghostIndex, move) for move in
+                    gameState.getLegalActions(ghostIndex)]])
+
+
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
@@ -219,7 +263,61 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        bestScore = -math.inf  # Initialize the best value as negative infinity
+        alpha = -math.inf  # Initialize alpha as negative infinity
+        beta = math.inf  # Initialize beta as positive infinity
+        actionSeq = []
+
+        # Iterate through legal actions for Pac-Man (agent 0)
+        for move in gameState.getLegalActions(0):
+            state = gameState.generateSuccessor(0, move)
+            
+            # Call minimax with alpha-beta pruning to get the value
+            new_score = self.minimaxPrune(1, range(gameState.getNumAgents()), state, self.depth, self.evaluationFunction, alpha, beta)
+            
+            # Update the best value and action sequence
+            if new_score > bestScore:
+                bestScore = new_score
+                actionSeq = move
+            
+            # Prune the search tree if val is greater than beta
+            if bestScore > beta:
+                return actionSeq
+            
+            # Update alpha
+            alpha = max(alpha, bestScore)
+        
+        return actionSeq
+
+    def minimaxPrune(self, agent, agents, state, depth, eval_function, alpha, beta):
+        if depth <= 0 or state.isWin() or state.isLose():
+            return eval_function(state)
+
+        if agent == 0:
+            bestScore = -math.inf  # Initialize value as negative infinity for max agent
+        else:
+            bestScore = math.inf  # Initialize value as positive infinity for min agents
+
+        for move in state.getLegalActions(agent):
+            successor = state.generateSuccessor(agent, move)
+            
+            if agent == agents[-1]:  # Last agent is a min agent
+                bestScore = min(bestScore, self.minimaxPrune(agents[0], agents, successor, depth - 1, eval_function, alpha, beta))
+                beta = min(beta, bestScore)
+                if bestScore < alpha:
+                    return bestScore
+            elif agent == 0:  # Max agent
+                bestScore = max(bestScore, self.minimaxPrune(agents[agent + 1], agents, successor, depth, eval_function, alpha, beta))
+                alpha = max(alpha, bestScore)
+                if bestScore > beta:
+                    return bestScore
+            else:  # Other min agents
+                bestScore = min(bestScore, self.minimaxPrune(agents[agent + 1], agents, successor, depth, eval_function, alpha, beta))
+                beta = min(beta, bestScore)
+                if bestScore < alpha:
+                    return bestScore
+        
+        return bestScore
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
