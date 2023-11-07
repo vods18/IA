@@ -26,6 +26,9 @@
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 
 
+# VINÍCIUS OLIVEIRA DOS SANTOS
+# GRR20182592
+
 import mdp, util
 
 from learningAgents import ValueEstimationAgent

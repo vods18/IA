@@ -12,6 +12,9 @@
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 
 
+# VINÍCIUS OLIVEIRA DOS SANTOS
+# GRR20182592
+
 from game import *
 from learningAgents import ReinforcementAgent
 from featureExtractors import *
